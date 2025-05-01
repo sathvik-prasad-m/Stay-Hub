@@ -89,7 +89,7 @@ app.use("/listings/:id/reviews", reviewRouter);
 app.use("/",userRouter);
 
 // If the req didn't match with any of the above routes then it'll come here
-app.all("*", (req, res) => {
+app.all("/", (req, res) => {
   throw new ExpressError(404, "Page not found!");
 });
 
