@@ -2,3 +2,4 @@
 node_modules/
 a.txt
 init/
+package-lock.json
