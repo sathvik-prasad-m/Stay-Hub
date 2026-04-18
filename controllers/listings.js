@@ -6,7 +6,10 @@ const geocdingClient=mbxGeocoding({accessToken: mapToken});
 
 module.exports.index = async (req, res) => {
   const q = req.query.q;
+  const category = req.query.category;
   let filter = {};
+  let allListings;
+
   if (q) {
     const regex = new RegExp(q, "i");
     filter = {
@@ -17,9 +20,23 @@ module.exports.index = async (req, res) => {
       ],
     };
   }
-  const allListings = await Listing.find(filter);
 
-  res.render("listings/index.ejs", { allListings });
+  if (category && category !== "Trending") {
+    filter.category = category;
+    allListings = await Listing.find(filter);
+  } else if (category === "Trending") {
+    // Trending = top 6 listings that have reviews, sorted by most reviews
+    allListings = await Listing.aggregate([
+      { $match: { ...filter, "reviews.0": { $exists: true } } },
+      { $addFields: { reviewCount: { $size: "$reviews" } } },
+      { $sort: { reviewCount: -1 } },
+      { $limit: 6 },
+    ]);
+  } else {
+    allListings = await Listing.find(filter);
+  }
+
+  res.render("listings/index.ejs", { allListings, searchQuery: q || "", activeCategory: category || "" });
 };
 
 module.exports.renderNewForm = (req, res) => {

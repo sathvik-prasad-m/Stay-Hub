@@ -42,6 +42,7 @@
             class="form-control me-2 search-input"
             type="search"
             placeholder="Search destinations"
+            value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
           />
           <button class="btn btn-search" type="submit">
             <i class="fa-solid fa-magnifying-glass"></i>Search

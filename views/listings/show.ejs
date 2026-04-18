@@ -3,152 +3,343 @@
   const mapToken="<%= process.env.MAP_TOKEN %>";
   const listing=<%-JSON.stringify(listing) %>;
 </script>
+<%
+  const fromCategory = typeof req !== 'undefined' && req.query && req.query.from ? req.query.from : '';
+  const backLink = fromCategory ? '/listings?category=' + encodeURIComponent(fromCategory) : '/listings';
+%>
 
-<body>
-  <div class="row">
-    <div class="col-8 offset-3">
-      <h3 class="mb-3"><%= listing.title %></h3>
+<style>
+  .show-hero-img {
+    width: 100%;
+    height: 50vh;
+    object-fit: cover;
+    border-radius: 1rem;
+  }
+
+  .show-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #222;
+  }
+
+  .show-subtitle {
+    color: #717171;
+    font-size: 0.95rem;
+  }
+
+  .show-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #717171;
+    font-size: 0.95rem;
+    flex-wrap: wrap;
+  }
+
+  .show-meta i {
+    color: #fe424d;
+  }
+
+  .show-meta .separator {
+    color: #ddd;
+  }
+
+  .show-price-badge {
+    background: #f7f7f7;
+    border-radius: 1rem;
+    padding: 1.25rem 1.5rem;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+  }
+
+  .show-price-badge .amount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #222;
+  }
+
+  .show-price-badge .per-night {
+    font-size: 0.9rem;
+    color: #717171;
+  }
+
+  .show-description {
+    font-size: 1rem;
+    color: #484848;
+    line-height: 1.6;
+  }
+
+  .show-owner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 0;
+  }
+
+  .show-owner-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #fe424d;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+
+  .show-owner-name {
+    font-weight: 600;
+    color: #222;
+  }
+
+  .show-owner-label {
+    font-size: 0.8rem;
+    color: #717171;
+  }
+
+  .show-section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 1rem;
+  }
+
+  .show-actions .btn {
+    border-radius: 0.5rem;
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+  }
+
+  .btn-edit {
+    background-color: #222;
+    color: #fff;
+    border: none;
+  }
+
+  .btn-edit:hover {
+    background-color: #444;
+    color: #fff;
+  }
+
+  .btn-delete {
+    background-color: #fff;
+    color: #fe424d;
+    border: 2px solid #fe424d;
+  }
+
+  .btn-delete:hover {
+    background-color: #fe424d;
+    color: #fff;
+  }
+
+  .review-card {
+    border: 1px solid #ebebeb;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    height: 100%;
+    transition: box-shadow 0.2s;
+  }
+
+  .review-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .review-author {
+    font-weight: 600;
+    color: #222;
+    font-size: 0.95rem;
+  }
+
+  .review-comment {
+    color: #484848;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0.5rem 0;
+  }
+
+  .review-form textarea {
+    border-radius: 0.75rem;
+    border: 1px solid #ddd;
+    resize: vertical;
+  }
+
+  .review-form textarea:focus {
+    border-color: #fe424d;
+    box-shadow: 0 0 0 0.2rem rgba(254, 66, 77, 0.15);
+  }
+
+  .btn-submit-review {
+    background-color: #fe424d;
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+  }
+
+  .btn-submit-review:hover {
+    background-color: #e03a44;
+    color: #fff;
+  }
+
+  #map {
+    height: 350px;
+    width: 100%;
+    border-radius: 1rem;
+  }
+
+  .show-divider {
+    border: none;
+    border-top: 1px solid #ebebeb;
+    margin: 1.5rem 0;
+  }
+</style>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8 col-md-10">
+
+    <!-- Hero Image -->
+    <a href="<%= backLink %>" style="text-decoration:none; color:#717171; font-size:0.9rem; display:inline-flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">
+      <i class="fa-solid fa-arrow-left"></i> Back to listings
+    </a>
+    <img
+      src="<%= listing.image.url %>"
+      class="show-hero-img mb-3"
+      alt="<%= listing.title %>"
+    />
+
+    <!-- Title & Location -->
+    <h1 class="show-title"><%= listing.title %></h1>
+    <div class="show-meta mt-2">
+      <i class="fa-solid fa-location-dot"></i>
+      <span><%= listing.location %></span>
+      <span class="separator">·</span>
+      <span><%= listing.country %></span>
     </div>
-    <div class="card col-6 offset-3 show-card listing-card">
-      <img
-        src="<%= listing.image.url %>"
-        class="card-img-top show-img"
-        alt="listing-image"
-      />
-      <div class="card-body">
-        <p class="card-text">Owned by: <i><%= listing.owner.username %></i></p>
-        <p class="card-text"><%= listing.description %><br /></p>
-        <p class="card-text">
-          &#8377; <%= listing.price.toLocaleString("en-IN") %><br />
-        </p>
-        <p class="card-text"><%= listing.location %><br /></p>
-        <p class="card-text"><%= listing.country %><br /></p>
+
+    <hr class="show-divider" />
+
+    <!-- Owner -->
+    <div class="show-owner">
+      <div class="show-owner-avatar">
+        <%= listing.owner.username.charAt(0).toUpperCase() %>
+      </div>
+      <div>
+        <div class="show-owner-name">Hosted by <%= listing.owner.username %></div>
+        <div class="show-owner-label">Property owner</div>
       </div>
     </div>
-  </div>
 
-  <% if(currUser && currUser.equals(listing.owner)) {%>
-  <div class="btns">
-    <a
-      href="/listings/<%= listing._id %>/edit"
-      class="btn btn-dark col-1 offset-3 edit-btn"
-      >Edit</a
-    >
-    <form
-      method="POST"
-      action="/listings/<%= listing._id %>?_method=DELETE"
-      class="col-1"
-    >
-      <button class="btn btn-dark offset-5">Delete</button>
-    </form>
-  </div>
-  <%}%>
+    <hr class="show-divider" />
 
-  <div class="col-8 offset-3">
-    <hr />
-    <% if(currUser){ %>
-    <h4>Leave a Review</h4>
+    <!-- Description -->
+    <p class="show-description"><%= listing.description %></p>
+
+    <!-- Price -->
+    <div class="show-price-badge mt-3 mb-3">
+      <span class="amount">&#8377;<%= listing.price.toLocaleString("en-IN") %></span>
+      <span class="per-night">/ night</span>
+    </div>
+    <div style="font-size: 0.85rem; color: #717171; margin-top: -0.5rem; margin-bottom: 1rem;">
+      &#8377;<%= (listing.price * 1.18).toLocaleString("en-IN", { maximumFractionDigits: 0 }) %> / night incl. 18% GST
+    </div>
+
+    <!-- Edit / Delete -->
+    <% if(currUser && currUser.equals(listing.owner)) { %>
+    <div class="show-actions d-flex gap-2 mt-3">
+      <a href="/listings/<%= listing._id %>/edit" class="btn btn-edit">
+        <i class="fa-solid fa-pen-to-square me-1"></i>Edit
+      </a>
+      <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
+        <button class="btn btn-delete">
+          <i class="fa-solid fa-trash me-1"></i>Delete
+        </button>
+      </form>
+    </div>
+    <% } %>
+
+    <hr class="show-divider" />
+
+    <!-- Map -->
+    <h3 class="show-section-title">Where you'll be</h3>
+    <div id="map" class="mb-4"></div>
+
+    <hr class="show-divider" />
+
+    <!-- Leave a Review -->
+    <% if(currUser) { %>
+    <h3 class="show-section-title">Leave a review</h3>
     <form
       action="/listings/<%= listing.id %>/reviews"
-      class="needs-validation"
+      class="review-form needs-validation mb-4"
       method="POST"
       novalidate
     >
-      <div class="mb-3 mt-3">
-        <label for="rating" class="form-label">Rating</label>
-        <fieldset class="starability-checkmark form-control">
-          <input
-            type="radio"
-            id="no-rate"
-            class="input-no-rate"
-            name="review[rating]"
-            value="0"
-            checked
-            aria-label="No rating."
-          />
-          <input
-            type="radio"
-            id="first-rate1"
-            name="review[rating]"
-            value="1"
-          />
+      <div class="mb-3">
+        <label for="rating" class="form-label" style="font-weight:600;">Rating</label>
+        <fieldset class="starability-checkmark form-control" style="border:none; padding-left:0;">
+          <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="0" checked aria-label="No rating." />
+          <input type="radio" id="first-rate1" name="review[rating]" value="1" />
           <label for="first-rate1" title="Terrible">1 star</label>
-          <input
-            type="radio"
-            id="first-rate2"
-            name="review[rating]"
-            value="2"
-          />
+          <input type="radio" id="first-rate2" name="review[rating]" value="2" />
           <label for="first-rate2" title="Not good">2 stars</label>
-          <input
-            type="radio"
-            id="first-rate3"
-            name="review[rating]"
-            value="3"
-          />
+          <input type="radio" id="first-rate3" name="review[rating]" value="3" />
           <label for="first-rate3" title="Average">3 stars</label>
-          <input
-            type="radio"
-            id="first-rate4"
-            name="review[rating]"
-            value="4"
-          />
+          <input type="radio" id="first-rate4" name="review[rating]" value="4" />
           <label for="first-rate4" title="Very good">4 stars</label>
-          <input
-            type="radio"
-            id="first-rate5"
-            name="review[rating]"
-            value="5"
-          />
+          <input type="radio" id="first-rate5" name="review[rating]" value="5" />
           <label for="first-rate5" title="Amazing">5 stars</label>
         </fieldset>
       </div>
-      <div class="mb-3 mt-3">
-        <label for="comment" class="form-label">Comments</label>
+      <div class="mb-3">
+        <label for="comment" class="form-label" style="font-weight:600;">Comments</label>
         <textarea
           name="review[comment]"
           id="comment"
           cols="30"
-          rows="5"
+          rows="4"
           class="form-control"
           required
         ></textarea>
         <div class="invalid-feedback">Please add some comments for review</div>
       </div>
-      <button class="btn btn-outline-dark">Submit</button>
+      <button class="btn btn-submit-review">Submit Review</button>
     </form>
-    <hr />
-    <% } %> <% if(listing.reviews.length>0) { %>
-    <div class="row">
-      <p><b>All Reviews</b></p>
+    <hr class="show-divider" />
+    <% } %>
+
+    <!-- All Reviews -->
+    <% if(listing.reviews.length > 0) { %>
+    <h3 class="show-section-title">Reviews</h3>
+    <div class="row g-3 mb-4">
       <% for(review of listing.reviews) { %>
-      <div class="card col-5 ms-3 mb-3">
-        <div class="card-body">
-          <h5 class="card-title mt-3">@<%= review.author.username %></h5>
-          <p class="card-text"><%= review.comment %></p>
-          <p
-            class="starability-result card-text"
-            data-rating=<%=review.rating%>>
-          </p>
+      <div class="col-md-6">
+        <div class="review-card">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="review-author">@<%= review.author.username %></div>
+            <p class="starability-result mb-0" data-rating="<%= review.rating %>"></p>
+          </div>
+          <p class="review-comment"><%= review.comment %></p>
+          <% if(currUser && currUser.equals(review.author._id)) { %>
           <form
             action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=delete"
             method="post"
-            class="mb-3"
           >
-            <button class="btn btn-sm btn-dark">Delete</button>
+            <button class="btn btn-sm btn-delete" style="font-size:0.8rem; padding:0.25rem 0.75rem;">
+              <i class="fa-solid fa-trash me-1"></i>Delete
+            </button>
           </form>
+          <% } %>
         </div>
       </div>
       <% } %>
     </div>
-    <hr>
     <% } %>
-  </div>
-  <div class="col-8 offset-3 mb-3">
-    <h3>Where you'll be</h3>
-    <div id="map"></div>
-  </div>
-</body>
 
+  </div>
+</div>
 
 <script src="/js/map.js"></script>

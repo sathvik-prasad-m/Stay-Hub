@@ -1,9 +1,9 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 const initData = require("./data.js");
 const Listing = require("../models/listing.js");
 const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
-const mapToken =
-  "pk.eyJ1Ijoic2F0aHZpazI4IiwiYSI6ImNtYTB6Y2RqejFrcnYyanNnOWwwbTVmNGsifQ.Hqk_IUQpBTwNo7pjQu38-A";
+const mapToken = process.env.MAP_TOKEN;
 const geocdingClient = mbxGeocoding({ accessToken: mapToken });
 
 main()
@@ -11,7 +11,7 @@ main()
   .catch((err) => console.log(err));
 
 async function main() {
-  await mongoose.connect("mongodb+srv://Sathvik:SuVfTERqkepI0vdH@cluster0.dg7wi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0");
+  await mongoose.connect(process.env.ATLASDB_URL);
 }
 
 let init = async () => {

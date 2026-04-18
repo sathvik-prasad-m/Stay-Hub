@@ -101,6 +101,17 @@
           <div class="invalid-feedback">Country name should by valid!</div>
         </div>
 
+        <div class="mb-3">
+          <label for="category" class="form-label">Category</label>
+          <select name="listing[category]" id="category" class="form-select">
+            <option value="">Select a category</option>
+            <% const categories = ["Rooms","Iconic Cities","Mountains","Castles","Amazing Pools","Camping","Farms","Arctic","Domes","Boats"]; %>
+            <% for (let cat of categories) { %>
+            <option value="<%= cat %>" <%= listing.category === cat ? 'selected' : '' %>><%= cat %></option>
+            <% } %>
+          </select>
+        </div>
+
         <button class="btn btn-dark edit-btn mt-2">Edit</button>
       </form>
     </div>

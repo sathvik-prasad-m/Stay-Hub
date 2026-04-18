@@ -92,18 +92,8 @@ body {
 }
 
 /* Show page */
-.show-img {
-  height: 30vh;
-}
-.btns {
-  display: flex;
-}
-.show-card {
-  padding-left: 0px;
-  padding-right: 0px;
-}
-
 #map {
-  height: 400px;
-  width: 80vh;
+  height: 350px;
+  width: 100%;
+  border-radius: 1rem;
 }
