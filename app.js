@@ -49,7 +49,7 @@ const store=MongoStore.create({
   touchAfter: 24*3600
 });
 
-store.on("error",()=>{
+store.on("error",(err)=>{
   console.log("Error in mongo session store", err);
 })
 
@@ -101,6 +101,7 @@ app.all("/{*splat}", (req, res) => {
 
 app.use((err, req, res, next) => {
   let { statusCode = 500, message = "Something Went Wrong!" } = err;
+  if (res.headersSent) return next(err);
   res.status(statusCode).render("error", { message });
 });
 
