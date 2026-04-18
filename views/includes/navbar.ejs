@@ -6,29 +6,54 @@
     border-radius: 25px;
     padding: 0 1rem;
   }
-
-  .btn-search i{
+  .btn-search i {
     display: inline;
     margin-right: 0.5rem;
   }
-
-  .search-input{
+  .search-input {
     border-radius: 25px;
-    padding: 0.5rem 3rem;
-    font-size: 1rem;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  /* Mobile navbar fixes */
+  @media (max-width: 767px) {
+    .navbar { height: auto !important; padding: 0.5rem 0; }
+    .navbar-collapse {
+      background: #fff;
+      border-top: 1px solid #f0f0f0;
+      padding: 0.75rem 0;
+      margin-top: 0.5rem;
+    }
+    .navbar-collapse .navbar-nav {
+      gap: 0.25rem;
+    }
+    .navbar-collapse .d-flex[role="search"] {
+      flex-direction: row;
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+    .navbar-collapse .search-input {
+      flex: 1;
+      min-width: 0;
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+    }
+    .navbar-collapse .btn-search {
+      padding: 0 0.75rem;
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+    .navbar-collapse .nav-link {
+      padding: 0.4rem 0.5rem !important;
+      font-size: 0.9rem;
+    }
   }
 </style>
 <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
   <div class="container-fluid">
-    <a class="navbar-brand" href="/listings"
-      ><i class="fa-regular fa-compass"></i
-    ></a>
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNavAltMarkup"
-    >
+    <a class="navbar-brand" href="/listings"><i class="fa-regular fa-compass"></i></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
@@ -37,24 +62,18 @@
       </div>
       <div class="navbar-nav ms-auto">
         <form action="/listings" method="GET" class="d-flex" role="search">
-          <input
-            name="q"
-            class="form-control me-2 search-input"
-            type="search"
-            placeholder="Search destinations"
-            value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
-          />
-          <button class="btn btn-search" type="submit">
-            <i class="fa-solid fa-magnifying-glass"></i>Search
-          </button>
+          <input name="q" class="form-control me-2 search-input" type="search" placeholder="Search destinations" value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>" />
+          <button class="btn btn-search" type="submit"><i class="fa-solid fa-magnifying-glass"></i>Search</button>
         </form>
       </div>
       <div class="navbar-nav ms-auto">
-        <a class="nav-link" href="/listings/new">Stayhub your home</a>
         <% if(!currUser){ %>
+        <a class="nav-link" href="/listings/new">Stayhub your home</a>
         <a class="nav-link" href="/signup"><b>Sign up</b></a>
         <a class="nav-link" href="/login"><b>Log in</b></a>
         <%} %> <% if(currUser){ %>
+        <a class="nav-link" href="/bookings"><b>My Trips</b></a>
+        <a class="nav-link" href="/bookings/dashboard"><b>Dashboard</b></a>
         <a class="nav-link" href="/logout"><b>Log out</b></a>
         <%} %>
       </div>

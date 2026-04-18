@@ -1,0 +1,189 @@
+<% layout("/layouts/boilerplate") %>
+
+<style>
+  .dash-title { font-size:1.75rem; font-weight:700; color:#222; margin-bottom:1.5rem; }
+  .stat-cards { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:2rem; }
+  .stat-card { flex:1; min-width:180px; background:#f7f7f7; border-radius:1rem; padding:1.25rem; text-align:center; }
+  .stat-value { font-size:1.75rem; font-weight:700; color:#222; }
+  .stat-label { font-size:0.82rem; color:#717171; margin-top:0.25rem; }
+  .stat-icon { font-size:1.5rem; color:#fe424d; margin-bottom:0.5rem; }
+
+  .dash-section { margin-bottom:2rem; }
+  .dash-section-title { font-size:1.15rem; font-weight:700; color:#222; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
+  .dash-section-title i { color:#fe424d; }
+
+  .dash-booking { border:1px solid #ebebeb; border-radius:0.75rem; padding:1rem; margin-bottom:0.75rem; display:flex; gap:1rem; align-items:center; }
+  .dash-booking-info { flex:1; }
+  .dash-booking-title { font-weight:600; color:#222; font-size:0.95rem; }
+  .dash-booking-meta { font-size:0.82rem; color:#717171; margin-top:0.2rem; }
+  .dash-booking-guest { font-size:0.82rem; color:#484848; }
+  .dash-booking-price { font-weight:700; color:#222; font-size:1rem; white-space:nowrap; }
+  .badge-sm { font-size:0.7rem; padding:0.2rem 0.6rem; border-radius:2rem; font-weight:600; }
+  .badge-confirmed-sm { background:#e8f5e9; color:#2e7d32; }
+  .badge-cancelled-sm { background:#fce4ec; color:#c62828; }
+
+  .block-form { background:#f9f9f9; border-radius:0.75rem; padding:1rem; margin-bottom:1rem; }
+  .block-item { display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #ebebeb; font-size:0.88rem; }
+  .block-item:last-child { border-bottom:none; }
+  .btn-unblock { background:none; border:1px solid #c62828; color:#c62828; border-radius:0.4rem; padding:0.2rem 0.6rem; font-size:0.75rem; cursor:pointer; }
+  .btn-unblock:hover { background:#c62828; color:#fff; }
+  .btn-block-submit { background:#222; color:#fff; border:none; border-radius:0.4rem; padding:0.4rem 1rem; font-size:0.85rem; cursor:pointer; }
+
+  .no-data { color:#717171; font-size:0.9rem; padding:1rem 0; }
+</style>
+
+<div class="row justify-content-center">
+  <div class="col-lg-10 col-md-12">
+    <h1 class="dash-title"><i class="fa-solid fa-chart-line" style="color:#fe424d;"></i> Host Dashboard</h1>
+
+    <!-- Stats -->
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-building"></i></div>
+        <div class="stat-value"><%= listings.length %></div>
+        <div class="stat-label">Listings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
+        <div class="stat-value"><%= totalBookings %></div>
+        <div class="stat-label">Total Bookings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+        <div class="stat-value"><%= upcomingCount %></div>
+        <div class="stat-label">Upcoming</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+        <div class="stat-value">&#8377;<%= totalRevenue.toLocaleString("en-IN") %></div>
+        <div class="stat-label">Total Revenue</div>
+      </div>
+    </div>
+
+    <!-- Your Listings — booking status -->
+    <div class="dash-section">
+      <div class="dash-section-title" style="justify-content:space-between;">
+        <span><i class="fa-solid fa-building"></i> Your Listings</span>
+        <a href="/listings/new" style="font-size:0.85rem; color:#fff; text-decoration:none; background:linear-gradient(to right,#e61e4d,#d70466); border-radius:2rem; padding:0.45rem 1.25rem; font-weight:600;">
+          <i class="fa-solid fa-plus" style="margin-right:0.3rem;"></i> Stayhub your home
+        </a>
+      </div>
+      <% for(let l of listings) { %>
+        <% const bookingEnabled = l.totalRooms && l.maxGuestsPerRoom; %>
+        <div class="dash-booking">
+          <div class="dash-booking-info">
+            <div class="dash-booking-title">
+              <a href="/listings/<%= l._id %>" style="text-decoration:none; color:#222;"><%= l.title %></a>
+              <% if(bookingEnabled) { %>
+                <span class="badge-sm badge-confirmed-sm ms-2"><i class="fa-solid fa-check" style="font-size:0.6rem;"></i> Booking enabled</span>
+              <% } else { %>
+                <span class="badge-sm badge-cancelled-sm ms-2"><i class="fa-solid fa-xmark" style="font-size:0.6rem;"></i> Booking not enabled</span>
+              <% } %>
+            </div>
+            <div class="dash-booking-meta">
+              <%= l.location %>, <%= l.country %>
+              &nbsp;·&nbsp; &#8377;<%= l.price.toLocaleString("en-IN") %>/night
+              <% if(bookingEnabled) { %>
+                &nbsp;·&nbsp; <%= l.totalRooms %> room(s), <%= l.maxGuestsPerRoom %> guests/room
+              <% } %>
+            </div>
+          </div>
+          <div>
+            <% if(bookingEnabled) { %>
+              <a href="/listings/<%= l._id %>/edit" style="font-size:0.82rem; color:#222; text-decoration:none; border:1px solid #ddd; border-radius:0.4rem; padding:0.3rem 0.75rem;">Edit</a>
+            <% } else { %>
+              <a href="/listings/<%= l._id %>/edit" style="font-size:0.82rem; color:#fff; text-decoration:none; background:#fe424d; border-radius:0.4rem; padding:0.3rem 0.75rem;">Enable booking</a>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Bookings -->
+    <div class="dash-section">
+      <div class="dash-section-title"><i class="fa-solid fa-receipt"></i> All Bookings</div>
+      <% if(bookings.length === 0) { %>
+        <div class="no-data">No bookings yet. Share your listings to get started!</div>
+      <% } else { %>
+        <% for(let b of bookings) { %>
+        <div class="dash-booking">
+          <div class="dash-booking-info">
+            <div class="dash-booking-title">
+              <% if(b.listing) { %><%= b.listing.title %><% } else { %>[Removed]<% } %>
+              <span class="badge-sm <%= b.status === 'confirmed' ? 'badge-confirmed-sm' : 'badge-cancelled-sm' %> ms-2"><%= b.status %></span>
+            </div>
+            <div class="dash-booking-meta">
+              <%= b.checkIn.toLocaleDateString("en-IN", {day:"numeric",month:"short"}) %> → <%= b.checkOut.toLocaleDateString("en-IN", {day:"numeric",month:"short",year:"numeric"}) %>
+              <% if(b.rooms && b.rooms > 1) { %>&nbsp;·&nbsp; <%= b.rooms %> rooms<% } %>
+              &nbsp;·&nbsp; <%= b.guests %> guest(s)
+            </div>
+            <div class="dash-booking-guest">
+              <i class="fa-solid fa-user" style="color:#fe424d;"></i>
+              <% if(b.guest) { %> @<%= b.guest.username %><% } else { %> [Unknown]<% } %>
+            </div>
+          </div>
+          <div class="dash-booking-price">&#8377;<%= b.totalPrice.toLocaleString("en-IN") %></div>
+        </div>
+        <% } %>
+      <% } %>
+    </div>
+
+    <!-- Block Dates — only for booking-enabled listings -->
+    <% const bookableListings = listings.filter(l => l.totalRooms && l.maxGuestsPerRoom); %>
+    <% if(bookableListings.length > 0) { %>
+    <div class="dash-section">
+      <div class="dash-section-title"><i class="fa-solid fa-ban"></i> Block Dates</div>
+      <% for(let l of bookableListings) { %>
+      <div class="block-form">
+        <div style="font-weight:600; margin-bottom:0.75rem;"><%= l.title %></div>
+        <form action="/bookings/block/<%= l._id %>" method="POST" class="d-flex gap-2 align-items-end flex-wrap mb-2">
+          <input type="hidden" name="from" id="blockFrom-<%= l._id %>" required />
+          <input type="hidden" name="to" id="blockTo-<%= l._id %>" required />
+          <div class="date-picker-trigger" id="blockDatePicker-<%= l._id %>" style="flex:1;">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span class="dp-placeholder">Select dates to block</span>
+          </div>
+          <div>
+            <label style="font-size:0.75rem; font-weight:600;">Reason</label>
+            <input type="text" name="reason" class="form-control form-control-sm" placeholder="Maintenance" />
+          </div>
+          <button class="btn-block-submit">Block</button>
+        </form>
+        <% if(l.blockedDates && l.blockedDates.length > 0) { %>
+          <% l.blockedDates.forEach((bd, idx) => { %>
+          <div class="block-item">
+            <span>
+              <%= new Date(bd.from).toLocaleDateString("en-IN",{day:"numeric",month:"short"}) %> → <%= new Date(bd.to).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}) %>
+              <% if(bd.reason) { %><span style="color:#717171;"> — <%= bd.reason %></span><% } %>
+            </span>
+            <form action="/bookings/unblock/<%= l._id %>/<%= idx %>" method="POST" style="margin:0;">
+              <button class="btn-unblock">Unblock</button>
+            </form>
+          </div>
+          <% }); %>
+        <% } else { %>
+          <div class="no-data">No blocked dates</div>
+        <% } %>
+      </div>
+      <% } %>
+    </div>
+    <% } %>
+
+  </div>
+</div>
+<script src="/js/datepicker.js"></script>
+<script>
+  // Init date pickers for each listing's block dates form
+  <% for (let l of bookableListings) { %>
+  (() => {
+    const trigger = document.getElementById("blockDatePicker-<%= l._id %>");
+    if (trigger) {
+      new StayHubDatePicker({
+        trigger: trigger,
+        fromInput: document.getElementById("blockFrom-<%= l._id %>"),
+        toInput: document.getElementById("blockTo-<%= l._id %>"),
+      });
+    }
+  })();
+  <% } %>
+</script>

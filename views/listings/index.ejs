@@ -1,191 +1,180 @@
 <% layout("/layouts/boilerplate") %>
+<%
+  function buildUrl(toggleCat) {
+    const params = new URLSearchParams();
+    let cats = [...activeCategories];
+    if (toggleCat) {
+      const idx = cats.indexOf(toggleCat);
+      idx >= 0 ? cats.splice(idx, 1) : cats.push(toggleCat);
+    }
+    if (cats.length) params.set("category", cats.join(","));
+    if (searchQuery) params.set("q", searchQuery);
+    if (dateFrom) params.set("dateFrom", dateFrom);
+    if (dateTo) params.set("dateTo", dateTo);
+    const qs = params.toString();
+    return "/listings" + (qs ? "?" + qs : "");
+  }
+  function isActive(cat) { return activeCategories.includes(cat); }
+  const hasDates = dateFrom && dateTo;
+
+  const allCats = [
+    { name: "Trending", icon: "fa-solid fa-fire" },
+    { name: "Rooms", icon: "fa-solid fa-bed" },
+    { name: "Iconic Cities", icon: "fa-solid fa-city" },
+    { name: "Mountains", icon: "fa-solid fa-mountain-sun" },
+    { name: "Castles", icon: "fa-solid fa-chess-rook" },
+    { name: "Amazing Pools", icon: "fa-solid fa-water-ladder" },
+    { name: "Camping", icon: "fa-solid fa-tent" },
+    { name: "Farms", icon: "fa-solid fa-tractor" },
+    { name: "Arctic", icon: "fa-regular fa-snowflake" },
+    { name: "Domes", icon: "fa-solid fa-igloo" },
+    { name: "Boats", icon: "fa-solid fa-sailboat" },
+    { name: "Beachfront", icon: "fa-solid fa-umbrella-beach" },
+    { name: "Lakeside", icon: "fa-solid fa-water" },
+    { name: "Treehouses", icon: "fa-solid fa-tree" },
+    { name: "Luxury", icon: "fa-solid fa-gem" },
+    { name: "Countryside", icon: "fa-solid fa-leaf" },
+    { name: "Desert", icon: "fa-solid fa-sun" },
+    { name: "Tropical", icon: "fa-solid fa-palm-tree" },
+    { name: "Ski-in/out", icon: "fa-solid fa-person-skiing" },
+    { name: "Vineyards", icon: "fa-solid fa-wine-glass" },
+    { name: "Historical", icon: "fa-solid fa-landmark" },
+  ];
+
+  // Build clear-all URL (keep only search query)
+  const clearUrl = "/listings" + (searchQuery ? "?q=" + encodeURIComponent(searchQuery) : "");
+  // Build clear-dates URL (keep categories + search)
+  const clearDatesParams = new URLSearchParams();
+  if (activeCategories.length) clearDatesParams.set("category", activeCategories.join(","));
+  if (searchQuery) clearDatesParams.set("q", searchQuery);
+  const clearDatesUrl = "/listings" + (clearDatesParams.toString() ? "?" + clearDatesParams.toString() : "");
+%>
+
 <style>
-  .filters-bar {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.75rem 0;
-    margin-bottom: 0.5rem;
+  /* ── Categories ── */
+  .cat-row { padding: 0.6rem 0 0; }
+  .cat-scroll {
+    display: flex; overflow-x: auto; gap: 1.5rem;
+    padding: 0 0.25rem 0.5rem; scrollbar-width: none;
   }
-
-  #filters {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    overflow-x: auto;
-    gap: 0.6rem;
-    padding: 0.25rem 0;
-    flex: 1;
-    scrollbar-width: none;
+  .cat-scroll::-webkit-scrollbar { display: none; }
+  .cat-item {
+    display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+    text-decoration: none; color: #717171; font-size: 0.7rem; font-weight: 600;
+    white-space: nowrap; padding: 0.35rem 0.15rem;
+    border-bottom: 2px solid transparent; transition: all 0.18s;
+    flex-shrink: 0; min-width: 44px; opacity: 0.65;
   }
+  .cat-item:hover { color: #222; opacity: 1; border-bottom-color: #ddd; }
+  .cat-item.active { color: #222; opacity: 1; border-bottom-color: #222; }
+  .cat-item i { font-size: 1.3rem; }
 
-  #filters::-webkit-scrollbar {
-    display: none;
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.45rem 0 0.5rem; border-top: 1px solid #f0f0f0;
+    flex-wrap: wrap;
   }
-
-  .filter {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  .tb-sep { width: 1px; height: 20px; background: #e0e0e0; flex-shrink: 0; }
+  .tb-chip {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    border: 1px solid #ddd; border-radius: 2rem;
+    padding: 0.35rem 0.85rem; font-size: 0.78rem;
+    color: #484848; background: #fff; cursor: pointer;
+    transition: all 0.15s; white-space: nowrap; user-select: none;
     text-decoration: none;
-    color: #717171;
-    background: #f7f7f7;
-    border: 1px solid #ebebeb;
-    border-radius: 2rem;
-    padding: 0.45rem 1rem;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-    transition: all 0.2s ease;
   }
+  .tb-chip:hover { border-color: #222; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .tb-chip i { color: #fe424d; font-size: 0.82rem; }
+  .tb-chip.on { border-color: #fe424d; background: #fff5f5; color: #c62828; }
+  .tb-chip.on i { color: #c62828; }
+  .tb-clear { font-size: 0.76rem; color: #717171; text-decoration: underline; white-space: nowrap; }
+  .tb-clear:hover { color: #c62828; }
+  .tb-badge {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    background: #e8f5e9; color: #2e7d32; border-radius: 2rem;
+    padding: 0.25rem 0.7rem; font-size: 0.72rem; font-weight: 600;
+  }
+  .tb-spacer { flex: 1; }
 
-  .filter:hover {
-    color: #222;
-    background: #fff;
-    border-color: #222;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  /* ── Active category tags ── */
+  .active-cats { display: flex; gap: 0.35rem; flex-wrap: wrap; padding: 0.1rem 0 0.3rem; }
+  .cat-tag {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    background: #f0f0f0; border-radius: 1rem; padding: 0.2rem 0.6rem;
+    font-size: 0.72rem; color: #484848; text-decoration: none; transition: all 0.15s;
   }
+  .cat-tag:hover { background: #fce4ec; color: #c62828; }
+  .cat-tag i { font-size: 0.6rem; }
 
-  .filter.active {
-    color: #fff;
-    background: #222;
-    border-color: #222;
-  }
-
-  .filter i {
-    font-size: 0.9rem;
-  }
-
-  .filter.active i {
-    color: #fff;
-  }
-
-  .tax-toggle {
-    border: 1px solid #ddd;
-    border-radius: 2rem;
-    padding: 0.5rem 1rem;
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    background: #f7f7f7;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .tax-toggle:hover {
-    border-color: #222;
-    background: #fff;
-  }
-
-  .tax-toggle .form-check-input:checked {
-    background-color: #fe424d;
-    border-color: #fe424d;
-  }
-
-  .tax-toggle .form-check-input:focus {
-    box-shadow: 0 0 0 0.2rem rgba(254, 66, 77, 0.2);
-  }
-
-  .price-display {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .price-base, .price-tax {
-    transition: opacity 0.25s ease, transform 0.25s ease;
-  }
-
-  .price-base {
-    font-weight: 600;
-    color: #222;
-  }
-
-  .price-tax {
-    display: none;
-    font-weight: 600;
-    color: #222;
-  }
-
-  .price-tax .gst-label {
-    font-weight: 400;
-    font-size: 0.78rem;
-    color: #717171;
-  }
-
-  .show-tax .price-base {
-    display: none;
-  }
-
-  .show-tax .price-tax {
-    display: inline;
-  }
+  /* ── Price ── */
+  .price-display { display: flex; flex-direction: column; }
+  .price-base { font-weight: 600; color: #222; }
+  .price-tax { display: none; font-weight: 600; color: #222; }
+  .price-tax .gst-label { font-weight: 400; font-size: 0.78rem; color: #717171; }
+  .show-tax .price-base { display: none; }
+  .show-tax .price-tax { display: inline; }
 </style>
 
-<div class="filters-bar">
-  <div id="filters">
-    <a href="<%= activeCategory === 'Trending' ? '/listings' : '/listings?category=Trending' %>" class="filter <%= activeCategory === 'Trending' ? 'active' : '' %>">
-      <i class="fa-solid fa-fire"></i> Trending
+<!-- Categories -->
+<div class="cat-row">
+  <div class="cat-scroll">
+    <% for (const cat of allCats) { %>
+    <a href="<%= buildUrl(cat.name) %>" class="cat-item <%= isActive(cat.name) ? 'active' : '' %>">
+      <i class="<%= cat.icon %>"></i>
+      <%= cat.name === 'Amazing Pools' ? 'Pools' : (cat.name === 'Iconic Cities' ? 'Cities' : cat.name) %>
     </a>
-    <a href="<%= activeCategory === 'Rooms' ? '/listings' : '/listings?category=Rooms' %>" class="filter <%= activeCategory === 'Rooms' ? 'active' : '' %>">
-      <i class="fa-solid fa-bed"></i> Rooms
-    </a>
-    <a href="<%= activeCategory === 'Iconic Cities' ? '/listings' : '/listings?category=Iconic Cities' %>" class="filter <%= activeCategory === 'Iconic Cities' ? 'active' : '' %>">
-      <i class="fa-solid fa-city"></i> Iconic Cities
-    </a>
-    <a href="<%= activeCategory === 'Mountains' ? '/listings' : '/listings?category=Mountains' %>" class="filter <%= activeCategory === 'Mountains' ? 'active' : '' %>">
-      <i class="fa-solid fa-mountain-sun"></i> Mountains
-    </a>
-    <a href="<%= activeCategory === 'Castles' ? '/listings' : '/listings?category=Castles' %>" class="filter <%= activeCategory === 'Castles' ? 'active' : '' %>">
-      <i class="fa-solid fa-chess-rook"></i> Castles
-    </a>
-    <a href="<%= activeCategory === 'Amazing Pools' ? '/listings' : '/listings?category=Amazing Pools' %>" class="filter <%= activeCategory === 'Amazing Pools' ? 'active' : '' %>">
-      <i class="fa-solid fa-water-ladder"></i> Amazing Pools
-    </a>
-    <a href="<%= activeCategory === 'Camping' ? '/listings' : '/listings?category=Camping' %>" class="filter <%= activeCategory === 'Camping' ? 'active' : '' %>">
-      <i class="fa-solid fa-tent"></i> Camping
-    </a>
-    <a href="<%= activeCategory === 'Farms' ? '/listings' : '/listings?category=Farms' %>" class="filter <%= activeCategory === 'Farms' ? 'active' : '' %>">
-      <i class="fa-solid fa-tractor"></i> Farms
-    </a>
-    <a href="<%= activeCategory === 'Arctic' ? '/listings' : '/listings?category=Arctic' %>" class="filter <%= activeCategory === 'Arctic' ? 'active' : '' %>">
-      <i class="fa-regular fa-snowflake"></i> Arctic
-    </a>
-    <a href="<%= activeCategory === 'Domes' ? '/listings' : '/listings?category=Domes' %>" class="filter <%= activeCategory === 'Domes' ? 'active' : '' %>">
-      <i class="fa-solid fa-igloo"></i> Domes
-    </a>
-    <a href="<%= activeCategory === 'Boats' ? '/listings' : '/listings?category=Boats' %>" class="filter <%= activeCategory === 'Boats' ? 'active' : '' %>">
-      <i class="fa-solid fa-sailboat"></i> Boats
-    </a>
+    <% } %>
   </div>
-  <div class="tax-toggle">
-    <div class="form-check-reverse form-switch">
-      <input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault" />
-      <label class="form-check-label" for="switchCheckDefault">Display total after taxes</label>
-    </div>
+</div>
+
+<!-- Active category tags -->
+<% if (activeCategories.length > 0) { %>
+<div class="active-cats">
+  <% for (const cat of activeCategories) { %>
+  <a href="<%= buildUrl(cat) %>" class="cat-tag"><%= cat %> <i class="fa-solid fa-xmark"></i></a>
+  <% } %>
+</div>
+<% } %>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <div class="date-picker-trigger tb-chip <%= hasDates ? 'on' : '' %>" id="datePickerTrigger">
+    <i class="fa-solid fa-calendar-days"></i>
+    <span class="<%= hasDates ? 'dp-label' : 'dp-placeholder' %>"><%= hasDates ? '' : 'Check in — Check out' %></span>
   </div>
+
+  <% if (hasDates) { %>
+    <span class="tb-badge"><i class="fa-solid fa-check"></i> Available stays</span>
+    <a href="<%= clearDatesUrl %>" class="tb-clear">Clear dates</a>
+  <% } %>
+
+  <% if (activeCategories.length > 0 || hasDates) { %>
+    <a href="<%= clearUrl %>" class="tb-clear">Reset all</a>
+  <% } %>
+
+  <span class="tb-spacer"></span>
+
+  <span class="tb-chip" id="taxToggle">
+    <i class="fa-solid fa-receipt"></i> Incl. taxes
+  </span>
 </div>
 
 <% if (allListings.length === 0) { %>
 <div class="text-center mt-5 mb-5">
-  <h4 style="color:#717171;">No listings found<%= activeCategory ? ' for "' + activeCategory + '"' : '' %></h4>
-  <a href="/listings" style="color:#fe424d; text-decoration:none; font-weight:600;">Clear filters</a>
+  <h4 style="color:#717171;">No listings found<%= activeCategories.length ? ' for selected filters' : '' %></h4>
+  <a href="/listings" style="color:#fe424d; text-decoration:none; font-weight:600;">Clear all filters</a>
 </div>
 <% } else { %>
 <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
   <% for (let list of allListings) { %>
-  <a href="/listings/<%= list._id %><%= activeCategory ? '?from=' + encodeURIComponent(activeCategory) : '' %>" class="listing-link">
+  <a href="/listings/<%= list._id %><%= activeCategories.length ? '?from=' + encodeURIComponent(activeCategories[0]) : '' %>" class="listing-link">
     <div class="card col listing-card">
-      <img
-        src="<%= list.image.url %>"
-        class="card-img-top"
-        alt="listing_image"
-        style="height: 20rem"
-      />
+      <img src="<%= list.image.url %>" class="card-img-top" alt="listing_image" style="height: 20rem" />
       <div class="card-img-overlay"></div>
       <div class="card-body">
         <p class="card-text">
-          <b><%= list.title %></b> <br />
+          <b><%= list.title %></b><br />
           <span class="price-display">
             <span class="price-base">&#8377;<%= list.price.toLocaleString("en-IN") %> <span style="font-weight:400; color:#717171;">/night</span></span>
             <span class="price-tax">&#8377;<%= (list.price * 1.18).toLocaleString("en-IN", { maximumFractionDigits: 0 }) %> <span style="font-weight:400; color:#717171;">/night</span> <span class="gst-label">incl. 18% GST</span></span>
@@ -198,37 +187,48 @@
 </div>
 <% } %>
 
+<script src="/js/datepicker.js"></script>
 <script>
-  // Persist active category across navigation
-  const activeCategory = "<%= activeCategory %>";
-  const currentUrl = new URL(window.location.href);
-
-  // If we landed on /listings with no category but sessionStorage has one (back button scenario)
-  if (!currentUrl.searchParams.get("category") && !currentUrl.searchParams.get("q") && sessionStorage.getItem("activeCategory")) {
-    const saved = sessionStorage.getItem("activeCategory");
-    if (saved) {
-      sessionStorage.removeItem("activeCategory");
-      window.location.replace("/listings?category=" + encodeURIComponent(saved));
-    }
-  }
-
-  // Save current category when navigating away
-  document.querySelectorAll(".listing-link").forEach((link) => {
-    link.addEventListener("click", () => {
-      if (activeCategory) {
-        sessionStorage.setItem("activeCategory", activeCategory);
-      } else {
-        sessionStorage.removeItem("activeCategory");
+  // Date picker — auto-navigates on apply
+  const dpTrigger = document.getElementById("datePickerTrigger");
+  if (dpTrigger) {
+    const dpFrom = document.createElement("input"); dpFrom.type = "hidden"; dpFrom.value = "<%= dateFrom %>";
+    const dpTo = document.createElement("input"); dpTo.type = "hidden"; dpTo.value = "<%= dateTo %>";
+    new StayHubDatePicker({
+      trigger: dpTrigger,
+      fromInput: dpFrom,
+      toInput: dpTo,
+      onApply: (start, end) => {
+        const params = new URLSearchParams(window.location.search);
+        const fmt = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+        params.set("dateFrom", fmt(start));
+        params.set("dateTo", fmt(end));
+        window.location.href = "/listings?" + params.toString();
       }
     });
-  });
+  }
 
   // Tax toggle
-  let taxSwitch = document.getElementById("switchCheckDefault");
-  taxSwitch.addEventListener("change", () => {
-    let cards = document.querySelectorAll(".price-display");
-    cards.forEach((card) => {
-      card.classList.toggle("show-tax", taxSwitch.checked);
+  const taxToggle = document.getElementById("taxToggle");
+  if (taxToggle) {
+    let on = false;
+    taxToggle.addEventListener("click", () => {
+      on = !on;
+      taxToggle.classList.toggle("on", on);
+      document.querySelectorAll(".price-display").forEach(c => c.classList.toggle("show-tax", on));
+    });
+  }
+
+  // Back button category persistence
+  const activeCats = JSON.parse('<%= JSON.stringify(activeCategories) %>');
+  const currentUrl = new URL(window.location.href);
+  if (!currentUrl.searchParams.get("category") && !currentUrl.searchParams.get("q") && sessionStorage.getItem("activeCategory")) {
+    const saved = sessionStorage.getItem("activeCategory");
+    if (saved) { sessionStorage.removeItem("activeCategory"); window.location.replace("/listings?category=" + encodeURIComponent(saved)); }
+  }
+  document.querySelectorAll(".listing-link").forEach(link => {
+    link.addEventListener("click", () => {
+      activeCats.length ? sessionStorage.setItem("activeCategory", activeCats.join(",")) : sessionStorage.removeItem("activeCategory");
     });
   });
 </script>

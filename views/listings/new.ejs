@@ -1,114 +1,227 @@
 <% layout("/layouts/boilerplate") %>
+<style>
+  .form-section { background: #f9f9f9; border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .form-section-title { font-weight: 700; font-size: 1.1rem; color: #222; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+  .form-section-title i { color: #fe424d; }
+  .form-hint { font-size: 0.78rem; color: #717171; margin-top: 0.2rem; }
+  .optional-badge { font-size: 0.7rem; color: #717171; font-weight: 400; margin-left: 0.5rem; }
+</style>
 <body>
   <div class="row">
-    <div class="col-6 offset-3">
+    <div class="col-8 offset-2">
       <h3 class="mb-3">Create a New Listing</h3>
-      <form
-        action="/listings"
-        method="POST"
-        novalidate
-        class="needs-validation"
-        enctype="multipart/form-data"
-      >
-        <div class="mb-3">
-          <label for="title" class="form-label">Title </label>
-          <input
-            id="title"
-            type="text"
-            name="listing[title]"
-            class="form-control"
-            placeholder="Add a catchy title"
-            required
-          />
-          <div class="valid-feedback">Looks good!</div>
-          <div class="invalid-feedback">Title can't be empty!</div>
-        </div>
+      <form action="/listings" method="POST" novalidate class="needs-validation" enctype="multipart/form-data">
 
-        <div class="mb-3">
-          <label for="description" class="form-label">Description</label>
-          <textarea
-            id="description"
-            name="listing[description]"
-            class="form-control"
-            required
-          ></textarea>
-          <div class="valid-feedback">Looks good!</div>
-          <div class="invalid-feedback">Please enter a short discription!</div>
-        </div>
-
-        <div class="mb-3">
-          <label for="image" class="form-label">Upload Image </label>
-          <input
-            id="image"
-            type="file"
-            name="listing[image]"
-            class="form-control"
-            required
-          />
-        </div>
-
-        <div class="row">
-          <div class="mb-3 col-md-4">
-            <label for="price" class="form-label">Price</label>
-            <input
-              name="listing[price]"
-              placeholder="1200"
-              type="number"
-              class="form-control"
-              required
-            />
-            <div class="valid-feedback">Looks good!</div>
-            <div class="invalid-feedback">Price should be valid!</div>
+        <!-- Basic Info -->
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-solid fa-circle-info"></i> Basic Information</div>
+          <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input id="title" type="text" name="listing[title]" class="form-control" placeholder="Add a catchy title" required />
+            <div class="invalid-feedback">Title can't be empty!</div>
           </div>
-
-          <div class="mb-3 col-md-8">
-            <label for="country" class="form-label">Country</label>
-            <input
-              type="text"
-              name="listing[country]"
-              placeholder="India"
-              id="country"
-              class="form-control"
-              required
-            />
-            <div class="valid-feedback">Looks good!</div>
-            <div class="invalid-feedback">Country name should by valid!</div>
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea id="description" name="listing[description]" class="form-control" rows="3" required></textarea>
+            <div class="invalid-feedback">Please enter a short description!</div>
+          </div>
+          <div class="mb-3">
+            <label for="image" class="form-label">Upload Image</label>
+            <input id="image" type="file" name="listing[image]" class="form-control" required />
+          </div>
+          <div class="row">
+            <div class="mb-3 col-md-4">
+              <label for="price" class="form-label">Price per night (₹)</label>
+              <input type="number" name="listing[price]" class="form-control" placeholder="1200" min="0" required />
+              <div class="invalid-feedback">Price is required!</div>
+            </div>
+            <div class="mb-3 col-md-4">
+              <label for="location" class="form-label">Location</label>
+              <input type="text" name="listing[location]" placeholder="Jaipur, Rajasthan" id="location" class="form-control" required />
+            </div>
+            <div class="mb-3 col-md-4">
+              <label for="country" class="form-label">Country</label>
+              <input type="text" name="listing[country]" placeholder="India" id="country" class="form-control" required />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <select name="listing[category]" id="category" class="form-select">
+              <option value="">Select a category</option>
+              <option value="Rooms">Rooms</option>
+              <option value="Iconic Cities">Iconic Cities</option>
+              <option value="Mountains">Mountains</option>
+              <option value="Castles">Castles</option>
+              <option value="Amazing Pools">Amazing Pools</option>
+              <option value="Camping">Camping</option>
+              <option value="Farms">Farms</option>
+              <option value="Arctic">Arctic</option>
+              <option value="Domes">Domes</option>
+              <option value="Boats">Boats</option>
+              <option value="Beachfront">Beachfront</option>
+              <option value="Lakeside">Lakeside</option>
+              <option value="Treehouses">Treehouses</option>
+              <option value="Luxury">Luxury</option>
+              <option value="Countryside">Countryside</option>
+              <option value="Desert">Desert</option>
+              <option value="Tropical">Tropical</option>
+              <option value="Ski-in/out">Ski-in/out</option>
+              <option value="Vineyards">Vineyards</option>
+              <option value="Historical">Historical</option>
+            </select>
           </div>
         </div>
 
-        <div class="mb-3">
-          <label for="location" class="form-label">Location</label>
-          <input
-            type="text"
-            name="listing[location]"
-            placeholder="Jaipur, Rajastan"
-            id="location"
-            class="form-control"
-            required
-          />
-          <div class="valid-feedback">Looks good!</div>
-          <div class="invalid-feedback">Location should be valid!</div>
+        <!-- Room & Capacity -->
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-solid fa-bed"></i> Room & Capacity <span class="optional-badge">Optional</span></div>
+          <div class="form-hint mb-3">Leave blank if you don't need room-based booking. Customers will just pick dates and guests.</div>
+          <div class="row">
+            <div class="mb-3 col-md-4">
+              <label class="form-label">Total Rooms</label>
+              <input type="number" name="listing[totalRooms]" class="form-control" placeholder="e.g. 5" min="1" />
+            </div>
+            <div class="mb-3 col-md-4">
+              <label class="form-label">Max Guests per Room</label>
+              <input type="number" name="listing[maxGuestsPerRoom]" class="form-control" placeholder="e.g. 2" min="1" />
+            </div>
+            <div class="mb-3 col-md-4">
+              <label class="form-label">Bed Type</label>
+              <select name="listing[bedType]" class="form-select">
+                <option value="">Not specified</option>
+                <option value="Single">Single</option>
+                <option value="Double">Double</option>
+                <option value="Queen">Queen</option>
+                <option value="King">King</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div class="mb-3">
-          <label for="category" class="form-label">Category</label>
-          <select name="listing[category]" id="category" class="form-select">
-            <option value="">Select a category</option>
-            <option value="Rooms">Rooms</option>
-            <option value="Iconic Cities">Iconic Cities</option>
-            <option value="Mountains">Mountains</option>
-            <option value="Castles">Castles</option>
-            <option value="Amazing Pools">Amazing Pools</option>
-            <option value="Camping">Camping</option>
-            <option value="Farms">Farms</option>
-            <option value="Arctic">Arctic</option>
-            <option value="Domes">Domes</option>
-            <option value="Boats">Boats</option>
-          </select>
+        <!-- Availability -->
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-solid fa-calendar-days"></i> Availability <span class="optional-badge">Optional</span></div>
+          <div class="form-hint mb-3">Leave blank for no restrictions on dates or stay length.</div>
+          <div class="row">
+            <div class="mb-3 col-12">
+              <label class="form-label">Availability Window</label>
+              <div class="date-picker-trigger" id="availDatePicker" style="width:100%;">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span class="dp-placeholder">Select availability range</span>
+              </div>
+              <input type="hidden" name="listing[availableFrom]" id="availFromInput" />
+              <input type="hidden" name="listing[availableTo]" id="availToInput" />
+              <div class="form-hint">Leave empty for no date restrictions</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="mb-3 col-md-6">
+              <label class="form-label">Minimum Stay (nights)</label>
+              <input type="number" name="listing[minStay]" class="form-control" placeholder="e.g. 2" min="1" />
+            </div>
+            <div class="mb-3 col-md-6">
+              <label class="form-label">Maximum Stay (nights)</label>
+              <input type="number" name="listing[maxStay]" class="form-control" placeholder="e.g. 30" min="1" />
+            </div>
+          </div>
         </div>
 
-        <button class="btn btn-dark add-btn mt-2">Add</button>
+        <!-- Pricing -->
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-solid fa-indian-rupee-sign"></i> Advanced Pricing <span class="optional-badge">Optional</span></div>
+          <div class="form-hint mb-3">Leave blank if you only need a flat nightly rate (set above).</div>
+          <div class="row">
+            <div class="mb-3 col-md-4">
+              <label class="form-label">Weekend Price / night</label>
+              <input type="number" name="listing[weekendPrice]" class="form-control" placeholder="Same as base" min="0" />
+              <div class="form-hint">Fri & Sat rate</div>
+            </div>
+            <div class="mb-3 col-md-4">
+              <label class="form-label">Extra Guest Charge / night</label>
+              <input type="number" name="listing[extraGuestCharge]" class="form-control" placeholder="0" min="0" />
+              <div class="form-hint">Per extra guest beyond room capacity</div>
+            </div>
+            <div class="mb-3 col-md-4">
+              <label class="form-label">Cleaning Fee</label>
+              <input type="number" name="listing[cleaningFee]" class="form-control" placeholder="0" min="0" />
+              <div class="form-hint">One-time fee per room</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="mb-3 col-md-6">
+              <label class="form-label">Weekly Discount (%)</label>
+              <input type="number" name="listing[weeklyDiscount]" class="form-control" placeholder="0" min="0" max="100" />
+              <div class="form-hint">For stays of 7+ nights</div>
+            </div>
+            <div class="mb-3 col-md-6">
+              <label class="form-label">Monthly Discount (%)</label>
+              <input type="number" name="listing[monthlyDiscount]" class="form-control" placeholder="0" min="0" max="100" />
+              <div class="form-hint">For stays of 28+ nights</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- House Rules -->
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-solid fa-scroll"></i> House Rules <span class="optional-badge">Optional</span></div>
+          <div class="form-hint mb-3">Only shown to customers if you fill these in.</div>
+          <div class="row">
+            <div class="mb-3 col-md-6">
+              <label class="form-label">Check-in Time</label>
+              <input type="time" name="listing[checkInTime]" class="form-control" />
+            </div>
+            <div class="mb-3 col-md-6">
+              <label class="form-label">Check-out Time</label>
+              <input type="time" name="listing[checkOutTime]" class="form-control" />
+            </div>
+          </div>
+          <div class="d-flex gap-4 mb-3 flex-wrap">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="listing[petsAllowed]" id="petsAllowed" />
+              <label class="form-check-label" for="petsAllowed"><i class="fa-solid fa-paw me-1"></i> Pets allowed</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="listing[smokingAllowed]" id="smokingAllowed" />
+              <label class="form-check-label" for="smokingAllowed"><i class="fa-solid fa-smoking me-1"></i> Smoking allowed</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="listing[partiesAllowed]" id="partiesAllowed" />
+              <label class="form-check-label" for="partiesAllowed"><i class="fa-solid fa-champagne-glasses me-1"></i> Parties allowed</label>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Custom Rules</label>
+            <textarea name="listing[customRules]" class="form-control" rows="2" placeholder="Any additional rules for guests..."></textarea>
+          </div>
+        </div>
+
+        <!-- Cancellation Policy -->
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-solid fa-shield-halved"></i> Cancellation Policy <span class="optional-badge">Optional</span></div>
+          <div class="form-hint mb-3">Only shown to customers if you select one.</div>
+          <div class="mb-3">
+            <select name="listing[cancellationPolicy]" class="form-select">
+              <option value="">Not specified</option>
+              <option value="flexible">Flexible — Full refund up to 1 day before check-in</option>
+              <option value="moderate">Moderate — Full refund up to 5 days before check-in</option>
+              <option value="strict">Strict — 50% refund up to 7 days before check-in</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-dark add-btn mt-2 mb-4">Create Listing</button>
       </form>
     </div>
   </div>
 </body>
+<script src="/js/datepicker.js"></script>
+<script>
+  const availTrigger = document.getElementById("availDatePicker");
+  if (availTrigger) {
+    new StayHubDatePicker({
+      trigger: availTrigger,
+      fromInput: document.getElementById("availFromInput"),
+      toInput: document.getElementById("availToInput"),
+    });
+  }
+</script>

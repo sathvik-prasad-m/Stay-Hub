@@ -12,6 +12,7 @@ const ExpressError = require("./utils/ExpressError");
 const listingRouter =require("./routes/listings.js");
 const reviewRouter=require("./routes/reviews.js");
 const userRouter=require("./routes/users.js");
+const bookingRouter=require("./routes/bookings.js");
 
 const session = require("express-session");
 const MongoStore = require('connect-mongo');
@@ -86,6 +87,7 @@ app.use((req,res,next)=>{
 
 app.use("/listings",listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
+app.use("/bookings",bookingRouter);
 app.use("/",userRouter);
 
 app.get("/", (req, res) => {

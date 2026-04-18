@@ -6,212 +6,90 @@
 <%
   const fromCategory = typeof req !== 'undefined' && req.query && req.query.from ? req.query.from : '';
   const backLink = fromCategory ? '/listings?category=' + encodeURIComponent(fromCategory) : '/listings';
+  const policyText = { flexible: "Full refund up to 1 day before check-in", moderate: "Full refund up to 5 days before check-in", strict: "50% refund up to 7 days before check-in" };
+  const policyLabel = listing.cancellationPolicy ? (policyText[listing.cancellationPolicy] || '') : '';
 %>
 
 <style>
-  .show-hero-img {
-    width: 100%;
-    height: 50vh;
-    object-fit: cover;
-    border-radius: 1rem;
-  }
+  .show-hero-img { width:100%; height:50vh; object-fit:cover; border-radius:1rem; }
+  .show-title { font-size:1.75rem; font-weight:700; color:#222; }
+  .show-meta { display:flex; align-items:center; gap:0.5rem; color:#717171; font-size:0.95rem; flex-wrap:wrap; }
+  .show-meta i { color:#fe424d; }
+  .show-meta .separator { color:#ddd; }
+  .show-description { font-size:1rem; color:#484848; line-height:1.6; }
+  .show-owner { display:flex; align-items:center; gap:0.75rem; padding:1rem 0; }
+  .show-owner-avatar { width:48px; height:48px; border-radius:50%; background:#fe424d; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.2rem; }
+  .show-owner-name { font-weight:600; color:#222; }
+  .show-owner-label { font-size:0.8rem; color:#717171; }
+  .show-section-title { font-size:1.25rem; font-weight:700; color:#222; margin-bottom:1rem; }
+  .show-actions .btn { border-radius:0.5rem; padding:0.5rem 1.5rem; font-weight:600; }
+  .btn-edit { background-color:#222; color:#fff; border:none; }
+  .btn-edit:hover { background-color:#444; color:#fff; }
+  .btn-delete { background-color:#fff; color:#fe424d; border:2px solid #fe424d; }
+  .btn-delete:hover { background-color:#fe424d; color:#fff; }
+  .review-card { border:1px solid #ebebeb; border-radius:1rem; padding:1.25rem; height:100%; transition:box-shadow 0.2s; }
+  .review-card:hover { box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+  .review-author { font-weight:600; color:#222; font-size:0.95rem; }
+  .review-comment { color:#484848; font-size:0.9rem; line-height:1.5; margin:0.5rem 0; }
+  .review-form textarea { border-radius:0.75rem; border:1px solid #ddd; resize:vertical; }
+  .review-form textarea:focus { border-color:#fe424d; box-shadow:0 0 0 0.2rem rgba(254,66,77,0.15); }
+  .btn-submit-review { background-color:#fe424d; color:#fff; border:none; border-radius:0.5rem; padding:0.5rem 1.5rem; font-weight:600; }
+  .btn-submit-review:hover { background-color:#e03a44; color:#fff; }
+  #map { height:350px; width:100%; border-radius:1rem; }
+  .show-divider { border:none; border-top:1px solid #ebebeb; margin:1.5rem 0; }
 
-  .show-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #222;
-  }
+  /* Property highlights */
+  .highlights { display:flex; flex-wrap:wrap; gap:0.75rem; margin:1rem 0; }
+  .highlight-chip { background:#f7f7f7; border:1px solid #ebebeb; border-radius:2rem; padding:0.4rem 1rem; font-size:0.82rem; color:#484848; display:flex; align-items:center; gap:0.4rem; }
+  .highlight-chip i { color:#fe424d; font-size:0.85rem; }
 
-  .show-subtitle {
-    color: #717171;
-    font-size: 0.95rem;
-  }
+  /* House rules */
+  .rules-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:0.75rem; }
+  .rule-item { display:flex; align-items:center; gap:0.5rem; font-size:0.88rem; color:#484848; padding:0.5rem 0; }
+  .rule-item i { width:20px; text-align:center; }
+  .rule-yes { color:#2e7d32; }
+  .rule-no { color:#c62828; }
 
-  .show-meta {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: #717171;
-    font-size: 0.95rem;
-    flex-wrap: wrap;
-  }
+  /* Cancellation policy */
+  .policy-badge { display:inline-flex; align-items:center; gap:0.4rem; background:#f0f7ff; border:1px solid #bbdefb; border-radius:2rem; padding:0.4rem 1rem; font-size:0.82rem; color:#1565c0; font-weight:600; }
 
-  .show-meta i {
-    color: #fe424d;
-  }
-
-  .show-meta .separator {
-    color: #ddd;
-  }
-
-  .show-price-badge {
-    background: #f7f7f7;
-    border-radius: 1rem;
-    padding: 1.25rem 1.5rem;
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.25rem;
-  }
-
-  .show-price-badge .amount {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #222;
-  }
-
-  .show-price-badge .per-night {
-    font-size: 0.9rem;
-    color: #717171;
-  }
-
-  .show-description {
-    font-size: 1rem;
-    color: #484848;
-    line-height: 1.6;
-  }
-
-  .show-owner {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 0;
-  }
-
-  .show-owner-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: #fe424d;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 1.2rem;
-  }
-
-  .show-owner-name {
-    font-weight: 600;
-    color: #222;
-  }
-
-  .show-owner-label {
-    font-size: 0.8rem;
-    color: #717171;
-  }
-
-  .show-section-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 1rem;
-  }
-
-  .show-actions .btn {
-    border-radius: 0.5rem;
-    padding: 0.5rem 1.5rem;
-    font-weight: 600;
-  }
-
-  .btn-edit {
-    background-color: #222;
-    color: #fff;
-    border: none;
-  }
-
-  .btn-edit:hover {
-    background-color: #444;
-    color: #fff;
-  }
-
-  .btn-delete {
-    background-color: #fff;
-    color: #fe424d;
-    border: 2px solid #fe424d;
-  }
-
-  .btn-delete:hover {
-    background-color: #fe424d;
-    color: #fff;
-  }
-
-  .review-card {
-    border: 1px solid #ebebeb;
-    border-radius: 1rem;
-    padding: 1.25rem;
-    height: 100%;
-    transition: box-shadow 0.2s;
-  }
-
-  .review-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  }
-
-  .review-author {
-    font-weight: 600;
-    color: #222;
-    font-size: 0.95rem;
-  }
-
-  .review-comment {
-    color: #484848;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    margin: 0.5rem 0;
-  }
-
-  .review-form textarea {
-    border-radius: 0.75rem;
-    border: 1px solid #ddd;
-    resize: vertical;
-  }
-
-  .review-form textarea:focus {
-    border-color: #fe424d;
-    box-shadow: 0 0 0 0.2rem rgba(254, 66, 77, 0.15);
-  }
-
-  .btn-submit-review {
-    background-color: #fe424d;
-    color: #fff;
-    border: none;
-    border-radius: 0.5rem;
-    padding: 0.5rem 1.5rem;
-    font-weight: 600;
-  }
-
-  .btn-submit-review:hover {
-    background-color: #e03a44;
-    color: #fff;
-  }
-
-  #map {
-    height: 350px;
-    width: 100%;
-    border-radius: 1rem;
-  }
-
-  .show-divider {
-    border: none;
-    border-top: 1px solid #ebebeb;
-    margin: 1.5rem 0;
-  }
+  /* Booking card */
+  .booking-card { border:1px solid #ddd; border-radius:1rem; padding:1.5rem; box-shadow:0 6px 16px rgba(0,0,0,0.08); position:sticky; top:6rem; overflow:visible; }
+  .booking-card-title { font-size:1.1rem; color:#222; margin-bottom:0.25rem; }
+  .booking-card-title span { font-weight:700; font-size:1.3rem; }
+  .booking-card-subtitle { font-size:0.78rem; color:#717171; margin-bottom:1rem; }
+  .booking-dates { display:flex; border:1px solid #b0b0b0; border-radius:0.75rem 0.75rem 0 0; overflow:hidden; }
+  .booking-field { display:flex; flex-direction:column; padding:0.6rem 0.75rem; flex:1; }
+  .booking-field label { font-size:0.65rem; font-weight:700; letter-spacing:0.04em; color:#222; }
+  .booking-field input, .booking-field select { border:none; outline:none; font-size:0.85rem; color:#484848; background:transparent; padding:0.15rem 0; }
+  .booking-field-left { border-right:1px solid #b0b0b0; }
+  .booking-guests-rooms { display:flex; border:1px solid #b0b0b0; border-top:none; }
+  .booking-guests-rooms .booking-field:first-child { border-right:1px solid #b0b0b0; }
+  .booking-field-bottom { border:1px solid #b0b0b0; border-top:none; border-radius:0 0 0.75rem 0.75rem; padding:0.6rem 0.75rem; margin-bottom:0.5rem; }
+  .booking-field select { width:100%; }
+  .availability-msg { font-size:0.8rem; padding:0.4rem 0; margin-bottom:0.5rem; font-weight:600; }
+  .avail-ok { color:#2e7d32; }
+  .avail-warn { color:#e65100; }
+  .avail-no { color:#c62828; }
+  .room-suggestion { font-size:0.78rem; color:#1565c0; background:#e3f2fd; border-radius:0.5rem; padding:0.5rem 0.75rem; margin-bottom:0.75rem; }
+  .btn-book { width:100%; background:linear-gradient(to right,#e61e4d,#d70466); color:#fff; border:none; border-radius:0.5rem; padding:0.85rem; font-size:1rem; font-weight:600; cursor:pointer; transition:opacity 0.2s; }
+  .btn-book:hover { opacity:0.9; }
+  .btn-book:disabled { opacity:0.5; cursor:not-allowed; }
+  .booking-note { text-align:center; font-size:0.8rem; color:#717171; margin-top:0.75rem; margin-bottom:0.5rem; }
+  .booking-summary { border-top:1px solid #ebebeb; padding-top:1rem; }
+  .summary-row { display:flex; justify-content:space-between; font-size:0.88rem; color:#484848; margin-bottom:0.4rem; }
+  .summary-discount { color:#2e7d32; }
+  .summary-total { font-weight:700; color:#222; font-size:1rem; border-top:1px solid #ebebeb; padding-top:0.75rem; margin-top:0.5rem; }
 </style>
 
 <div class="row justify-content-center">
-  <div class="col-lg-8 col-md-10">
+  <div class="col-lg-8 col-md-7">
 
-    <!-- Hero Image -->
     <a href="<%= backLink %>" style="text-decoration:none; color:#717171; font-size:0.9rem; display:inline-flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">
       <i class="fa-solid fa-arrow-left"></i> Back to listings
     </a>
-    <img
-      src="<%= listing.image.url %>"
-      class="show-hero-img mb-3"
-      alt="<%= listing.title %>"
-    />
+    <img src="<%= listing.image.url %>" class="show-hero-img mb-3" alt="<%= listing.title %>" />
 
-    <!-- Title & Location -->
     <h1 class="show-title"><%= listing.title %></h1>
     <div class="show-meta mt-2">
       <i class="fa-solid fa-location-dot"></i>
@@ -220,13 +98,26 @@
       <span><%= listing.country %></span>
     </div>
 
+    <!-- Property Highlights — only show if owner has configured -->
+    <% const hasRoomConfig = listing.totalRooms && listing.totalRooms !== 1 || listing.maxGuestsPerRoom && listing.maxGuestsPerRoom !== 2 || listing.bedType && listing.bedType !== 'Double'; %>
+    <% const hasDiscounts = listing.weeklyDiscount > 0 || listing.monthlyDiscount > 0; %>
+    <% const hasMinStay = listing.minStay && listing.minStay > 1; %>
+    <% if(hasRoomConfig || hasDiscounts || hasMinStay) { %>
+    <div class="highlights">
+      <% if(listing.totalRooms && listing.totalRooms > 1) { %><div class="highlight-chip"><i class="fa-solid fa-door-open"></i> <%= listing.totalRooms %> room(s)</div><% } %>
+      <% if(listing.maxGuestsPerRoom && listing.maxGuestsPerRoom !== 2) { %><div class="highlight-chip"><i class="fa-solid fa-user-group"></i> <%= listing.maxGuestsPerRoom %> guests/room</div><% } %>
+      <% if(listing.bedType && listing.bedType !== 'Double') { %><div class="highlight-chip"><i class="fa-solid fa-bed"></i> <%= listing.bedType %> bed</div><% } %>
+      <% if(hasMinStay) { %><div class="highlight-chip"><i class="fa-solid fa-moon"></i> Min <%= listing.minStay %> nights</div><% } %>
+      <% if(listing.weeklyDiscount > 0) { %><div class="highlight-chip"><i class="fa-solid fa-tag"></i> <%= listing.weeklyDiscount %>% weekly discount</div><% } %>
+      <% if(listing.monthlyDiscount > 0) { %><div class="highlight-chip"><i class="fa-solid fa-tag"></i> <%= listing.monthlyDiscount %>% monthly discount</div><% } %>
+    </div>
+    <% } %>
+
     <hr class="show-divider" />
 
     <!-- Owner -->
     <div class="show-owner">
-      <div class="show-owner-avatar">
-        <%= listing.owner.username.charAt(0).toUpperCase() %>
-      </div>
+      <div class="show-owner-avatar"><%= listing.owner.username.charAt(0).toUpperCase() %></div>
       <div>
         <div class="show-owner-name">Hosted by <%= listing.owner.username %></div>
         <div class="show-owner-label">Property owner</div>
@@ -235,28 +126,43 @@
 
     <hr class="show-divider" />
 
-    <!-- Description -->
     <p class="show-description"><%= listing.description %></p>
 
-    <!-- Price -->
-    <div class="show-price-badge mt-3 mb-3">
-      <span class="amount">&#8377;<%= listing.price.toLocaleString("en-IN") %></span>
-      <span class="per-night">/ night</span>
+    <!-- House Rules — only show if owner configured them -->
+    <% const hasHouseRules = (listing.checkInTime && listing.checkInTime !== '14:00') || (listing.checkOutTime && listing.checkOutTime !== '11:00') || listing.petsAllowed || listing.smokingAllowed || listing.partiesAllowed || listing.customRules; %>
+    <% if(hasHouseRules) { %>
+    <hr class="show-divider" />
+    <h3 class="show-section-title">House Rules</h3>
+    <div class="rules-grid">
+      <% if(listing.checkInTime) { %><div class="rule-item"><i class="fa-solid fa-right-to-bracket"></i> Check-in: <%= listing.checkInTime %></div><% } %>
+      <% if(listing.checkOutTime) { %><div class="rule-item"><i class="fa-solid fa-right-from-bracket"></i> Check-out: <%= listing.checkOutTime %></div><% } %>
+      <% if(listing.petsAllowed) { %><div class="rule-item rule-yes"><i class="fa-solid fa-paw"></i> Pets allowed</div><% } %>
+      <% if(listing.smokingAllowed) { %><div class="rule-item rule-yes"><i class="fa-solid fa-smoking"></i> Smoking allowed</div><% } %>
+      <% if(listing.partiesAllowed) { %><div class="rule-item rule-yes"><i class="fa-solid fa-champagne-glasses"></i> Parties allowed</div><% } %>
     </div>
-    <div style="font-size: 0.85rem; color: #717171; margin-top: -0.5rem; margin-bottom: 1rem;">
-      &#8377;<%= (listing.price * 1.18).toLocaleString("en-IN", { maximumFractionDigits: 0 }) %> / night incl. 18% GST
+    <% if(listing.customRules) { %>
+    <p style="font-size:0.88rem; color:#484848; margin-top:0.75rem;"><i class="fa-solid fa-circle-exclamation me-1" style="color:#fe424d;"></i> <%= listing.customRules %></p>
+    <% } %>
+    <% } %>
+
+    <!-- Cancellation Policy — only show if explicitly set -->
+    <% if(listing.cancellationPolicy) { %>
+    <hr class="show-divider" />
+    <h3 class="show-section-title">Cancellation Policy</h3>
+    <div class="policy-badge">
+      <i class="fa-solid fa-shield-halved"></i>
+      <%= listing.cancellationPolicy.charAt(0).toUpperCase() + listing.cancellationPolicy.slice(1) %>
     </div>
+    <p style="font-size:0.85rem; color:#717171; margin-top:0.5rem;"><%= policyLabel %></p>
+    <% } %>
 
     <!-- Edit / Delete -->
     <% if(currUser && currUser.equals(listing.owner)) { %>
-    <div class="show-actions d-flex gap-2 mt-3">
-      <a href="/listings/<%= listing._id %>/edit" class="btn btn-edit">
-        <i class="fa-solid fa-pen-to-square me-1"></i>Edit
-      </a>
+    <hr class="show-divider" />
+    <div class="show-actions d-flex gap-2">
+      <a href="/listings/<%= listing._id %>/edit" class="btn btn-edit"><i class="fa-solid fa-pen-to-square me-1"></i>Edit</a>
       <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
-        <button class="btn btn-delete">
-          <i class="fa-solid fa-trash me-1"></i>Delete
-        </button>
+        <button class="btn btn-delete"><i class="fa-solid fa-trash me-1"></i>Delete</button>
       </form>
     </div>
     <% } %>
@@ -272,38 +178,21 @@
     <!-- Leave a Review -->
     <% if(currUser) { %>
     <h3 class="show-section-title">Leave a review</h3>
-    <form
-      action="/listings/<%= listing.id %>/reviews"
-      class="review-form needs-validation mb-4"
-      method="POST"
-      novalidate
-    >
+    <form action="/listings/<%= listing.id %>/reviews" class="review-form needs-validation mb-4" method="POST" novalidate>
       <div class="mb-3">
         <label for="rating" class="form-label" style="font-weight:600;">Rating</label>
         <fieldset class="starability-checkmark form-control" style="border:none; padding-left:0;">
           <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="0" checked aria-label="No rating." />
-          <input type="radio" id="first-rate1" name="review[rating]" value="1" />
-          <label for="first-rate1" title="Terrible">1 star</label>
-          <input type="radio" id="first-rate2" name="review[rating]" value="2" />
-          <label for="first-rate2" title="Not good">2 stars</label>
-          <input type="radio" id="first-rate3" name="review[rating]" value="3" />
-          <label for="first-rate3" title="Average">3 stars</label>
-          <input type="radio" id="first-rate4" name="review[rating]" value="4" />
-          <label for="first-rate4" title="Very good">4 stars</label>
-          <input type="radio" id="first-rate5" name="review[rating]" value="5" />
-          <label for="first-rate5" title="Amazing">5 stars</label>
+          <input type="radio" id="first-rate1" name="review[rating]" value="1" /><label for="first-rate1" title="Terrible">1 star</label>
+          <input type="radio" id="first-rate2" name="review[rating]" value="2" /><label for="first-rate2" title="Not good">2 stars</label>
+          <input type="radio" id="first-rate3" name="review[rating]" value="3" /><label for="first-rate3" title="Average">3 stars</label>
+          <input type="radio" id="first-rate4" name="review[rating]" value="4" /><label for="first-rate4" title="Very good">4 stars</label>
+          <input type="radio" id="first-rate5" name="review[rating]" value="5" /><label for="first-rate5" title="Amazing">5 stars</label>
         </fieldset>
       </div>
       <div class="mb-3">
         <label for="comment" class="form-label" style="font-weight:600;">Comments</label>
-        <textarea
-          name="review[comment]"
-          id="comment"
-          cols="30"
-          rows="4"
-          class="form-control"
-          required
-        ></textarea>
+        <textarea name="review[comment]" id="comment" cols="30" rows="4" class="form-control" required></textarea>
         <div class="invalid-feedback">Please add some comments for review</div>
       </div>
       <button class="btn btn-submit-review">Submit Review</button>
@@ -324,13 +213,8 @@
           </div>
           <p class="review-comment"><%= review.comment %></p>
           <% if(currUser && currUser.equals(review.author._id)) { %>
-          <form
-            action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=delete"
-            method="post"
-          >
-            <button class="btn btn-sm btn-delete" style="font-size:0.8rem; padding:0.25rem 0.75rem;">
-              <i class="fa-solid fa-trash me-1"></i>Delete
-            </button>
+          <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=delete" method="post">
+            <button class="btn btn-sm btn-delete" style="font-size:0.8rem; padding:0.25rem 0.75rem;"><i class="fa-solid fa-trash me-1"></i>Delete</button>
           </form>
           <% } %>
         </div>
@@ -340,6 +224,249 @@
     <% } %>
 
   </div>
+
+  <!-- Booking Sidebar -->
+  <div class="col-lg-4 col-md-5">
+    <%
+      const isConfigured = listing.totalRooms && listing.maxGuestsPerRoom;
+      const effectiveRooms = listing.totalRooms || 1;
+      const effectiveGuestsPerRoom = listing.maxGuestsPerRoom || 2;
+      const maxTotal = effectiveRooms * effectiveGuestsPerRoom;
+    %>
+    <% if(currUser && !currUser.equals(listing.owner) && isConfigured) { %>
+    <div class="booking-card">
+      <h5 class="booking-card-title">
+        <span>&#8377;<%= listing.price.toLocaleString("en-IN") %></span> / <% if(effectiveRooms > 1) { %>room / <% } %>night
+      </h5>
+      <% if((listing.weekendPrice && listing.weekendPrice !== listing.price) || listing.cleaningFee > 0) { %>
+      <div class="booking-card-subtitle">
+        <% if(listing.weekendPrice && listing.weekendPrice !== listing.price) { %>
+          Weekend: &#8377;<%= listing.weekendPrice.toLocaleString("en-IN") %>/night &nbsp;·&nbsp;
+        <% } %>
+        <% if(listing.cleaningFee > 0) { %>
+          Cleaning: &#8377;<%= listing.cleaningFee.toLocaleString("en-IN") %>/room
+        <% } %>
+      </div>
+      <% } %>
+      <form action="/bookings/listings/<%= listing._id %>" method="POST" class="needs-validation" novalidate id="bookingForm">
+        <input type="hidden" id="checkIn" name="booking[checkIn]" required />
+        <input type="hidden" id="checkOut" name="booking[checkOut]" required />
+        <div class="date-picker-trigger" id="bookingDatePicker" style="width:100%; justify-content:center; border-radius:0.75rem; padding:0.75rem; margin-bottom:0; border-color:#b0b0b0;">
+          <i class="fa-solid fa-calendar-days"></i>
+          <span class="dp-placeholder">Select check-in → check-out</span>
+        </div>
+        <div class="booking-guests-rooms">
+          <div class="booking-field"<% if(effectiveRooms <= 1) { %> style="border-right:none;"<% } %>>
+            <label for="guests">GUESTS</label>
+            <select id="guests" name="booking[guests]" required>
+              <% for(let i = 1; i <= maxTotal; i++) { %>
+                <option value="<%= i %>"><%= i %> guest<%= i > 1 ? 's' : '' %></option>
+              <% } %>
+            </select>
+          </div>
+          <% if(effectiveRooms > 1) { %>
+          <div class="booking-field">
+            <label for="rooms">ROOMS</label>
+            <select id="rooms" name="booking[rooms]" required>
+              <% for(let i = 1; i <= effectiveRooms; i++) { %>
+                <option value="<%= i %>"><%= i %> room<%= i > 1 ? 's' : '' %></option>
+              <% } %>
+            </select>
+          </div>
+          <% } else { %>
+          <input type="hidden" id="rooms" name="booking[rooms]" value="1" />
+          <% } %>
+        </div>
+        <div class="booking-field-bottom" style="border:1px solid #b0b0b0; border-top:none; border-radius:0 0 0.75rem 0.75rem; padding:0;">
+          <div id="roomSuggestion" class="room-suggestion" style="display:none; margin:0; border-radius:0 0 0.75rem 0.75rem;"></div>
+        </div>
+
+        <div id="availabilityMsg" class="availability-msg" style="display:none;"></div>
+
+        <button type="submit" class="btn-book" id="bookBtn" disabled>Select dates to reserve</button>
+        <p class="booking-note">You won't be charged yet</p>
+
+        <div class="booking-summary" id="bookingSummary" style="display:none;">
+          <div class="summary-row"><span id="baseLabel">-</span><span>&#8377;<span id="baseAmount">0</span></span></div>
+          <div class="summary-row" id="weekendRow" style="display:none;"><span>Weekend surcharge</span><span>&#8377;<span id="weekendAmount">0</span></span></div>
+          <div class="summary-row" id="extraGuestRow" style="display:none;"><span>Extra guest fee</span><span>&#8377;<span id="extraGuestAmount">0</span></span></div>
+          <div class="summary-row" id="cleaningRow" style="display:none;"><span>Cleaning fee</span><span>&#8377;<span id="cleaningAmount">0</span></span></div>
+          <div class="summary-row summary-discount" id="discountRow" style="display:none;"><span id="discountLabel">Discount</span><span>-&#8377;<span id="discountAmount">0</span></span></div>
+          <div class="summary-row"><span>GST (18%)</span><span>&#8377;<span id="gstAmount">0</span></span></div>
+          <div class="summary-row summary-total"><span>Total</span><span>&#8377;<span id="totalPrice">0</span></span></div>
+        </div>
+      </form>
+    </div>
+    <% } else if(currUser && !currUser.equals(listing.owner) && !isConfigured) { %>
+    <div class="booking-card" style="text-align:center; padding:2rem;">
+      <i class="fa-solid fa-calendar-xmark" style="font-size:2rem; color:#ddd; margin-bottom:0.75rem;"></i>
+      <p style="color:#484848; font-weight:600; margin-bottom:0.5rem;">Not available for booking yet</p>
+      <p style="color:#717171; font-size:0.85rem;">The host hasn't enabled booking for this listing. Contact the host for availability.</p>
+    </div>
+    <% } else if(!currUser) { %>
+    <div class="booking-card" style="text-align:center; padding:2rem;">
+      <p style="color:#484848; margin-bottom:1rem;">Log in to book this place</p>
+      <a href="/login" class="btn-book" style="text-decoration:none; display:inline-block; text-align:center;">Log in</a>
+    </div>
+    <% } %>
+  </div>
 </div>
 
 <script src="/js/map.js"></script>
+<script src="/js/datepicker.js"></script>
+<script>
+  const basePrice = <%= listing.price %>;
+  const weekendPrice = <%= listing.weekendPrice || listing.price %>;
+  const maxGuestsPerRoom = <%= listing.maxGuestsPerRoom || 0 %>;
+  const totalRooms = <%= listing.totalRooms || 0 %>;
+  const isConfigured = totalRooms > 0 && maxGuestsPerRoom > 0;
+  const extraGuestCharge = <%= listing.extraGuestCharge || 0 %>;
+  const cleaningFee = <%= listing.cleaningFee || 0 %>;
+  const weeklyDiscount = <%= listing.weeklyDiscount || 0 %>;
+  const monthlyDiscount = <%= listing.monthlyDiscount || 0 %>;
+  const minStay = <%= listing.minStay || 0 %>;
+  const maxStay = <%= listing.maxStay || 0 %>;
+  const listingId = "<%= listing._id %>";
+
+  const checkInEl = document.getElementById("checkIn");
+  const checkOutEl = document.getElementById("checkOut");
+  const guestsEl = document.getElementById("guests");
+  const roomsEl = document.getElementById("rooms");
+  const bookBtn = document.getElementById("bookBtn");
+
+  if (checkInEl && checkOutEl) {
+    // Init custom date picker for booking
+    const bookingDpTrigger = document.getElementById("bookingDatePicker");
+    if (bookingDpTrigger) {
+      <% if(listing.availableFrom) { %>
+        const dpMinDate = new Date("<%= new Date(listing.availableFrom).toISOString().split('T')[0] %>");
+      <% } else { %>
+        const dpMinDate = new Date();
+      <% } %>
+      new StayHubDatePicker({
+        trigger: bookingDpTrigger,
+        fromInput: checkInEl,
+        toInput: checkOutEl,
+        minDate: dpMinDate,
+        onApply: (start, end) => {
+          const fmt = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+          checkInEl.value = fmt(start);
+          checkOutEl.value = fmt(end);
+          try { updateSummary(); } catch(err) { console.error("updateSummary error:", err); }
+        },
+      });
+    }
+
+    // Form validation
+    const form = document.getElementById("bookingForm");
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        if (!checkInEl.value || !checkOutEl.value || new Date(checkOutEl.value) <= new Date(checkInEl.value)) {
+          e.preventDefault();
+          alert("Please select valid check-in and check-out dates.");
+        }
+      });
+    }
+
+    function countWeekends(ci, co) {
+      let count = 0, d = new Date(ci);
+      while (d < co) { if (d.getDay() === 5 || d.getDay() === 6) count++; d.setDate(d.getDate() + 1); }
+      return count;
+    }
+
+    function updateRoomSuggestion() {
+      const suggestion = document.getElementById("roomSuggestion");
+      if (!isConfigured || !roomsEl) { suggestion.style.display = "none"; return; }
+      const g = parseInt(guestsEl.value), r = parseInt(roomsEl.value);
+      const needed = Math.ceil(g / maxGuestsPerRoom);
+      if (g > r * maxGuestsPerRoom) {
+        suggestion.innerHTML = `<i class="fa-solid fa-lightbulb"></i> ${g} guests need at least ${needed} room(s) (${maxGuestsPerRoom}/room). Extra guest charges may apply.`;
+        suggestion.style.display = "block";
+      } else if (needed < r && r > 1) {
+        suggestion.innerHTML = `<i class="fa-solid fa-lightbulb"></i> ${g} guest(s) fit in ${needed} room(s). You could save by booking fewer.`;
+        suggestion.style.display = "block";
+      } else { suggestion.style.display = "none"; }
+    }
+
+    async function checkAvailability() {
+      const msg = document.getElementById("availabilityMsg");
+      if (!checkInEl.value || !checkOutEl.value) { msg.style.display = "none"; return; }
+      try {
+        const resp = await fetch(`/bookings/availability/${listingId}?checkIn=${checkInEl.value}&checkOut=${checkOutEl.value}`);
+        const data = await resp.json();
+        msg.style.display = "block";
+        const r = roomsEl ? parseInt(roomsEl.value) : 1;
+        if (data.rooms === 0) {
+          msg.className = "availability-msg avail-no";
+          msg.innerHTML = "<i class='fa-solid fa-circle-xmark'></i> No rooms available for these dates";
+          bookBtn.disabled = true;
+        } else if (data.rooms < r) {
+          msg.className = "availability-msg avail-warn";
+          msg.innerHTML = `<i class='fa-solid fa-triangle-exclamation'></i> Only ${data.rooms} room(s) available`;
+          bookBtn.disabled = true;
+        } else {
+          msg.className = "availability-msg avail-ok";
+          msg.innerHTML = `<i class='fa-solid fa-circle-check'></i> ${data.rooms} of ${totalRooms} room(s) available`;
+          bookBtn.disabled = false;
+          bookBtn.textContent = "Reserve";
+        }
+      } catch(e) { msg.style.display = "none"; }
+    }
+
+    function updateSummary() {
+      if (!checkInEl.value || !checkOutEl.value) {
+        document.getElementById("bookingSummary").style.display = "none";
+        bookBtn.disabled = true; bookBtn.textContent = "Select dates to reserve"; return;
+      }
+      const ci = new Date(checkInEl.value), co = new Date(checkOutEl.value);
+      if (co <= ci) {
+        document.getElementById("bookingSummary").style.display = "none";
+        bookBtn.disabled = true; bookBtn.textContent = "Check-out must be after check-in"; return;
+      }
+      const nights = Math.ceil((co - ci) / (1000*60*60*24));
+      const g = parseInt(guestsEl.value);
+      const r = roomsEl ? parseInt(roomsEl.value) : 1;
+
+      if (minStay > 0 && nights < minStay) {
+        bookBtn.disabled = true; bookBtn.textContent = `Minimum ${minStay} night(s) required`;
+        document.getElementById("bookingSummary").style.display = "none"; return;
+      }
+      if (maxStay > 0 && nights > maxStay) {
+        bookBtn.disabled = true; bookBtn.textContent = `Maximum ${maxStay} night(s) allowed`;
+        document.getElementById("bookingSummary").style.display = "none"; return;
+      }
+
+      const wkndNights = countWeekends(ci, co), wkdayNights = nights - wkndNights;
+      const base = (wkdayNights * basePrice + wkndNights * weekendPrice) * r;
+      const wkndSurcharge = wkndNights * (weekendPrice - basePrice) * r;
+      const extraGuests = Math.max(0, g - maxGuestsPerRoom * r);
+      const extraFee = extraGuests * extraGuestCharge * nights;
+      const cleaning = cleaningFee * r;
+      let discPct = 0;
+      if (nights >= 28 && monthlyDiscount > 0) discPct = monthlyDiscount;
+      else if (nights >= 7 && weeklyDiscount > 0) discPct = weeklyDiscount;
+      const beforeDiscount = base + extraFee + cleaning;
+      const discount = Math.round(beforeDiscount * discPct / 100);
+      const afterDiscount = beforeDiscount - discount;
+      const gst = Math.round(afterDiscount * 0.18);
+      const total = afterDiscount + gst;
+
+      document.getElementById("baseLabel").textContent = `₹${basePrice.toLocaleString("en-IN")} × ${nights} night(s) × ${r} room(s)`;
+      document.getElementById("baseAmount").textContent = base.toLocaleString("en-IN");
+      const wR = document.getElementById("weekendRow"); wkndSurcharge > 0 ? (wR.style.display="flex", document.getElementById("weekendAmount").textContent=wkndSurcharge.toLocaleString("en-IN")) : wR.style.display="none";
+      const eR = document.getElementById("extraGuestRow"); extraFee > 0 ? (eR.style.display="flex", document.getElementById("extraGuestAmount").textContent=extraFee.toLocaleString("en-IN")) : eR.style.display="none";
+      const cR = document.getElementById("cleaningRow"); cleaning > 0 ? (cR.style.display="flex", document.getElementById("cleaningAmount").textContent=cleaning.toLocaleString("en-IN")) : cR.style.display="none";
+      const dR = document.getElementById("discountRow"); discount > 0 ? (dR.style.display="flex", document.getElementById("discountLabel").textContent=`${discPct}% ${nights>=28?'monthly':'weekly'} discount`, document.getElementById("discountAmount").textContent=discount.toLocaleString("en-IN")) : dR.style.display="none";
+      document.getElementById("gstAmount").textContent = gst.toLocaleString("en-IN");
+      document.getElementById("totalPrice").textContent = total.toLocaleString("en-IN");
+      document.getElementById("bookingSummary").style.display = "block";
+      checkAvailability(); updateRoomSuggestion();
+    }
+
+    // Listen for manual changes on hidden inputs (from datepicker)
+    checkInEl.addEventListener("change", updateSummary);
+    checkOutEl.addEventListener("change", updateSummary);
+    guestsEl.addEventListener("change", () => { updateSummary(); updateRoomSuggestion(); });
+    if (roomsEl && roomsEl.tagName === "SELECT") roomsEl.addEventListener("change", () => { updateSummary(); updateRoomSuggestion(); });
+  }
+</script>
